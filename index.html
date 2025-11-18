@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classical Philosophy Text Analysis - Plato & Aristotle</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #34495e;
+            overflow-x: auto;
+            border-bottom: 3px solid #2c3e50;
+        }
+
+        .tab-button {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px 20px;
+            background: #34495e;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+            border-right: 1px solid #2c3e50;
+        }
+
+        .tab-button:hover {
+            background: #3498db;
+        }
+
+        .tab-button.active {
+            background: #3498db;
+            font-weight: bold;
+            box-shadow: inset 0 -3px 0 #2980b9;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .wordcloud-container {
+            margin: 30px 0;
+            text-align: center;
+        }
+
+        .wordcloud-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s;
+        }
+
+        .wordcloud-container img:hover {
+            transform: scale(1.02);
+        }
+
+        .wordcloud-container h2 {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.8em;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 30px 0;
+        }
+
+        .text-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            border-left: 5px solid #3498db;
+            margin-bottom: 30px;
+        }
+
+        .text-info h2 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .text-info .author-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #3498db;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+            letter-spacing: 1px;
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .term-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .term-tag {
+            background: #3498db;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .term-tag .count {
+            background: rgba(255,255,255,0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .selector label {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #2c3e50;
+        }
+
+        .selector select {
+            padding: 10px 15px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .overview-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid #3498db;
+            transition: transform 0.3s;
+        }
+
+        .overview-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .overview-card h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .overview-card .author {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
+        .overview-card .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .overview-card .stat-item {
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .overview-card .stat-item .number {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .overview-card .stat-item .label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 2em;
+            margin: 30px 0 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .note {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-content {
+                padding: 20px;
+            }
+
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Classical Philosophy Text Analysis</h1>
+            <p>Exploring the Works of Plato and Aristotle through Data Visualization</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab('overview')">Overview</button>
+            <button class="tab-button" onclick="openTab('individual')">Individual Texts</button>
+            <button class="tab-button" onclick="openTab('comparison')">Comparisons</button>
+            <button class="tab-button" onclick="openTab('vocabulary')">Vocabulary Overlap</button>
+            <button class="tab-button" onclick="openTab('philosophical')">Philosophical Terms</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <h2 class="section-title">Overview of All Texts</h2>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Documents</h3>
+                    <div class="value" id="total-docs">6</div>
+                    <div class="label">Classical Texts Analyzed</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Words</h3>
+                    <div class="value" id="total-words">0</div>
+                    <div class="label">Across All Texts</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Unique Words</h3>
+                    <div class="value" id="unique-words">0</div>
+                    <div class="label">Combined Vocabulary</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Diversity</h3>
+                    <div class="value" id="avg-diversity">0%</div>
+                    <div class="label">Vocabulary Richness</div>
+                </div>
+            </div>
+
+            <div class="wordcloud-container">
+                <h2>All Texts Combined - Word Cloud</h2>
+                <img src="output/wordclouds/all_texts_combined.png" alt="All Texts Combined">
+            </div>
+
+            <h2 class="section-title">Individual Works</h2>
+            <div class="overview-grid" id="overview-cards"></div>
+        </div>
+
+        <!-- Individual Texts Tab -->
+        <div id="individual" class="tab-content">
+            <h2 class="section-title">Individual Text Analysis</h2>
+
+            <div class="selector">
+                <label for="text-selector">Select Text:</label>
+                <select id="text-selector" onchange="displayText()">
+                    <option value="">-- Choose a text --</option>
+                </select>
+            </div>
+
+            <div id="text-display"></div>
+        </div>
+
+        <!-- Comparison Tab -->
+        <div id="comparison" class="tab-content">
+            <h2 class="section-title">Author Comparisons</h2>
+
+            <div class="comparison-grid">
+                <div class="wordcloud-container">
+                    <h2>Plato - All Works</h2>
+                    <img src="output/wordclouds/plato_combined.png" alt="Plato Combined">
+                    <div class="text-info" style="margin-top: 20px;">
+                        <div id="plato-stats"></div>
+                    </div>
+                </div>
+
+                <div class="wordcloud-container">
+                    <h2>Aristotle - All Works</h2>
+                    <img src="output/wordclouds/aristotle_combined.png" alt="Aristotle Combined">
+                    <div class="text-info" style="margin-top: 20px;">
+                        <div id="aristotle-stats"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="note">
+                <strong>Note:</strong> Plato's works often feature Socratic dialogues, while Aristotle's works tend to be more systematic treatises. This difference may reflect in vocabulary diversity and question density.
+            </div>
+        </div>
+
+        <!-- Vocabulary Overlap Tab -->
+        <div id="vocabulary" class="tab-content">
+            <h2 class="section-title">Vocabulary Overlap Analysis</h2>
+            <p>This analysis shows which texts share the most common vocabulary, indicating thematic and conceptual connections.</p>
+
+            <div id="overlap-table"></div>
+        </div>
+
+        <!-- Philosophical Terms Tab -->
+        <div id="philosophical" class="tab-content">
+            <h2 class="section-title">Philosophical Term Frequency</h2>
+            <p>Key philosophical concepts tracked across all texts:</p>
+
+            <div id="philosophical-terms"></div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = null;
+
+        // Load the analysis data
+        fetch('output/data/analysis.json')
+            .then(response => response.json())
+            .then(data => {
+                analysisData = data;
+                initializePage();
+            })
+            .catch(error => {
+                console.error('Error loading analysis data:', error);
+                alert('Error loading analysis data. Make sure analysis.json is in the data folder.');
+            });
+
+        function initializePage() {
+            if (!analysisData) return;
+
+            // Populate overview statistics
+            const analyses = analysisData.individual_analyses;
+            let totalWords = 0;
+            let totalUnique = 0;
+            let totalDiversity = 0;
+            let count = 0;
+
+            for (const [key, analysis] of Object.entries(analyses)) {
+                totalWords += analysis.statistics.total_words;
+                totalUnique += analysis.statistics.unique_words;
+                totalDiversity += analysis.statistics.vocabulary_diversity;
+                count++;
+            }
+
+            document.getElementById('total-words').textContent = totalWords.toLocaleString();
+            document.getElementById('unique-words').textContent = totalUnique.toLocaleString();
+            document.getElementById('avg-diversity').textContent =
+                ((totalDiversity / count) * 100).toFixed(1) + '%';
+
+            // Populate overview cards
+            const overviewContainer = document.getElementById('overview-cards');
+            for (const [key, analysis] of Object.entries(analyses)) {
+                const card = createOverviewCard(key, analysis);
+                overviewContainer.appendChild(card);
+            }
+
+            // Populate text selector
+            const selector = document.getElementById('text-selector');
+            for (const [key, analysis] of Object.entries(analyses)) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = `${analysis.metadata.title} by ${analysis.metadata.author}`;
+                selector.appendChild(option);
+            }
+
+            // Populate author stats
+            populateAuthorStats();
+
+            // Populate overlap table
+            populateOverlapTable();
+
+            // Populate philosophical terms
+            populatePhilosophicalTerms();
+        }
+
+        function createOverviewCard(key, analysis) {
+            const card = document.createElement('div');
+            card.className = 'overview-card';
+            card.style.cursor = 'pointer';
+            card.onclick = () => {
+                document.getElementById('text-selector').value = key;
+                displayText();
+                openTab('individual');
+            };
+
+            const diversity = (analysis.statistics.vocabulary_diversity * 100).toFixed(1);
+
+            card.innerHTML = `
+                <h3>${analysis.metadata.title}</h3>
+                <div class="author">by ${analysis.metadata.author}</div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="number">${(analysis.statistics.total_words / 1000).toFixed(1)}K</div>
+                        <div class="label">Words</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${(analysis.statistics.unique_words / 1000).toFixed(1)}K</div>
+                        <div class="label">Unique</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${diversity}%</div>
+                        <div class="label">Diversity</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="number">${analysis.statistics.total_sentences.toLocaleString()}</div>
+                        <div class="label">Sentences</div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function displayText() {
+            const key = document.getElementById('text-selector').value;
+            if (!key || !analysisData) return;
+
+            const analysis = analysisData.individual_analyses[key];
+            const container = document.getElementById('text-display');
+
+            const diversity = (analysis.statistics.vocabulary_diversity * 100).toFixed(1);
+
+            container.innerHTML = `
+                <div class="text-info">
+                    <h2>
+                        ${analysis.metadata.title}
+                        <span class="author-badge">${analysis.metadata.author}</span>
+                    </h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Words</h3>
+                        <div class="value">${analysis.statistics.total_words.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Unique Words</h3>
+                        <div class="value">${analysis.statistics.unique_words.toLocaleString()}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Vocabulary Diversity</h3>
+                        <div class="value">${diversity}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Word Length</h3>
+                        <div class="value">${analysis.statistics.avg_word_length}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Avg Sentence Length</h3>
+                        <div class="value">${analysis.statistics.avg_sentence_length.toFixed(1)}</div>
+                        <div class="label">words per sentence</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Question Density</h3>
+                        <div class="value">${(analysis.statistics.question_density * 100).toFixed(1)}%</div>
+                        <div class="label">${analysis.statistics.question_count} questions</div>
+                    </div>
+                </div>
+
+                <div class="wordcloud-container">
+                    <h2>Word Cloud</h2>
+                    <img src="output/wordclouds/${key}.png" alt="${analysis.metadata.title}">
+                </div>
+
+                <h3 style="margin-top: 30px; color: #2c3e50;">Top 30 Most Frequent Words</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Word</th>
+                            <th>Frequency</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${Object.entries(analysis.top_50_words).slice(0, 30).map(([word, count], index) => `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td><strong>${word}</strong></td>
+                                <td>${count}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+
+                ${Object.keys(analysis.philosophical_terms).length > 0 ? `
+                    <h3 style="margin-top: 30px; color: #2c3e50;">Philosophical Terms Found</h3>
+                    <div class="term-list">
+                        ${Object.entries(analysis.philosophical_terms)
+                            .sort((a, b) => b[1] - a[1])
+                            .map(([term, count]) => `
+                                <div class="term-tag">
+                                    ${term} <span class="count">${count}</span>
+                                </div>
+                            `).join('')}
+                    </div>
+                ` : ''}
+
+                <div class="note" style="margin-top: 30px;">
+                    <strong>Sentiment Analysis:</strong>
+                    Polarity: ${analysis.sentiment.polarity}
+                    (${analysis.sentiment.polarity > 0 ? 'positive' : analysis.sentiment.polarity < 0 ? 'negative' : 'neutral'}),
+                    Subjectivity: ${analysis.sentiment.subjectivity}
+                    <br><em>Note: Sentiment analysis is approximate for classical philosophical texts and should be interpreted with caution.</em>
+                </div>
+            `;
+        }
+
+        function populateAuthorStats() {
+            const analyses = analysisData.individual_analyses;
+
+            let platoStats = { words: 0, unique: 0, count: 0, questions: 0 };
+            let aristotleStats = { words: 0, unique: 0, count: 0, questions: 0 };
+
+            for (const [key, analysis] of Object.entries(analyses)) {
+                const stats = analysis.metadata.author === 'Plato' ? platoStats : aristotleStats;
+                stats.words += analysis.statistics.total_words;
+                stats.unique += analysis.statistics.unique_words;
+                stats.questions += analysis.statistics.question_count;
+                stats.count++;
+            }
+
+            document.getElementById('plato-stats').innerHTML = `
+                <h3>Plato's Works (${platoStats.count} texts)</h3>
+                <p><strong>Total Words:</strong> ${platoStats.words.toLocaleString()}</p>
+                <p><strong>Unique Words:</strong> ${platoStats.unique.toLocaleString()}</p>
+                <p><strong>Total Questions:</strong> ${platoStats.questions.toLocaleString()}</p>
+                <p><strong>Avg Questions per Text:</strong> ${(platoStats.questions / platoStats.count).toFixed(0)}</p>
+            `;
+
+            document.getElementById('aristotle-stats').innerHTML = `
+                <h3>Aristotle's Works (${aristotleStats.count} texts)</h3>
+                <p><strong>Total Words:</strong> ${aristotleStats.words.toLocaleString()}</p>
+                <p><strong>Unique Words:</strong> ${aristotleStats.unique.toLocaleString()}</p>
+                <p><strong>Total Questions:</strong> ${aristotleStats.questions.toLocaleString()}</p>
+                <p><strong>Avg Questions per Text:</strong> ${(aristotleStats.questions / aristotleStats.count).toFixed(0)}</p>
+            `;
+        }
+
+        function populateOverlapTable() {
+            const overlaps = analysisData.vocabulary_overlap;
+            const analyses = analysisData.individual_analyses;
+
+            const sortedOverlaps = Object.entries(overlaps)
+                .sort((a, b) => b[1].overlap_ratio - a[1].overlap_ratio);
+
+            const html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Text 1</th>
+                            <th>Text 2</th>
+                            <th>Shared Words</th>
+                            <th>Overlap Ratio</th>
+                            <th>Sample Shared Words</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedOverlaps.map(([key, data]) => `
+                            <tr>
+                                <td><strong>${analyses[data.doc1].metadata.title}</strong></td>
+                                <td><strong>${analyses[data.doc2].metadata.title}</strong></td>
+                                <td>${data.shared_words}</td>
+                                <td>${(data.overlap_ratio * 100).toFixed(1)}%</td>
+                                <td style="font-size: 0.85em;">${data.shared_word_list.slice(0, 10).join(', ')}...</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('overlap-table').innerHTML = html;
+        }
+
+        function populatePhilosophicalTerms() {
+            const analyses = analysisData.individual_analyses;
+            const termTotals = {};
+
+            // Aggregate all philosophical terms
+            for (const [key, analysis] of Object.entries(analyses)) {
+                for (const [term, count] of Object.entries(analysis.philosophical_terms)) {
+                    if (!termTotals[term]) {
+                        termTotals[term] = { total: 0, byText: {} };
+                    }
+                    termTotals[term].total += count;
+                    termTotals[term].byText[key] = count;
+                }
+            }
+
+            // Sort by total frequency
+            const sortedTerms = Object.entries(termTotals)
+                .sort((a, b) => b[1].total - a[1].total);
+
+            const html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Term</th>
+                            <th>Total Occurrences</th>
+                            <th>Distribution Across Texts</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sortedTerms.map(([term, data]) => `
+                            <tr>
+                                <td><strong>${term}</strong></td>
+                                <td>${data.total}</td>
+                                <td>
+                                    ${Object.entries(data.byText)
+                                        .sort((a, b) => b[1] - a[1])
+                                        .map(([key, count]) =>
+                                            `${analyses[key].metadata.title.split(' ')[0]}: ${count}`
+                                        )
+                                        .join(' | ')}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            document.getElementById('philosophical-terms').innerHTML = html;
+        }
+
+        function openTab(tabName) {
+            // Hide all tabs
+            const tabs = document.getElementsByClassName('tab-content');
+            for (let tab of tabs) {
+                tab.classList.remove('active');
+            }
+
+            // Remove active class from all buttons
+            const buttons = document.getElementsByClassName('tab-button');
+            for (let button of buttons) {
+                button.classList.remove('active');
+            }
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>
